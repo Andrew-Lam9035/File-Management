@@ -1,0 +1,62 @@
+SECTION .text
+        global  _start
+ 
+_start:
+
+        mov     ecx, 0711o ; Set all permissions to read, write, execute (octal format)
+        mov     ebx, filename       ; filename we will create
+        mov     eax, 8              ; invoke SYS_CREAT (kernel opcode 8)
+        int     0x80                ; call the kernel
+
+        ;file open operation to open quotes
+        mov eax, 5					;file handling system call
+        mov ebx, filename
+        mov ecx, 1
+        mov edx, 0777o
+        int 0x80
+
+        mov [fd_out],eax
+
+        ;file write operation
+        mov eax, 4					;file handling system call
+        mov ebx, [fd_out]   ;file descriptor
+        mov ecx, firstLine ;Puts 'To be, or not to be, that is the question.' into the file quotes
+        mov edx, 42         ;number of bytes written
+        int 0x80
+        
+        mov eax, 4					;file handling system call
+        mov ebx, [fd_out]   ;file descriptor
+        mov ecx, newLine ;Adds the newLine to the 
+        mov edx, 1         ;number of bytes written
+        int 0x80
+        
+        mov eax, 4					;file handling system call
+        mov ebx, [fd_out]   ;file descriptor
+        mov ecx, secondLine ;Puts 'A fool thinks himself to be wise, but a wise man knows himself to be a fool.'
+        mov edx, 76         ;number of bytes written
+        int 0x80
+
+        mov eax, 4					;file handling system call
+        mov ebx, [fd_out]   ;file descriptor
+        mov ecx, newLine ;Adds a new line
+        mov edx, 1         ;number of bytes written
+        int 0x80
+
+        ;file close operation
+        mov eax, 6					;file handling system call
+        mov ebx, [fd_out]
+        int 0x80
+
+
+
+        mov eax, 1
+        int 0x80 ;Exit the program
+
+section .bss
+        fd_out resb 1
+        
+SECTION .data
+        filename db 'quotes.txt', 0h    ; the filename to create
+        firstLine db 'To be, or not to be, that is the question.', 0h  ; the contents to write
+        secondLine db 'A fool thinks himself to be wise, but a wise man knows himself to be a fool.', 0h
+        newLine db 10, 0h
